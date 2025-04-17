@@ -363,7 +363,6 @@
     </div>
 
     <script>
-        // Chat functionality
         const userInput = document.getElementById('userInput');
         const sendButton = document.getElementById('sendButton');
         const chatContainer = document.getElementById('chatContainer');
@@ -394,18 +393,12 @@
                 chatContainer.appendChild(typingDiv);
                 typingDiv.style.display = 'block';
 
-                // Get userId if logged in
-                const userId = localStorage.getItem('userId');
-
                 const response = await fetch('http://localhost:3000/api/search', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ 
-                        query: message,
-                        userId: userId // Include userId if available
-                    })
+                    body: JSON.stringify({ query: message })
                 });
 
                 // Remove typing indicator
@@ -416,6 +409,7 @@
                 }
 
                 const data = await response.json();
+                // Show AI response
                 addMessage(data.content, false);
             } catch (error) {
                 addMessage('Error: ' + error.message, false);
@@ -435,89 +429,7 @@
         // Focus input on page load
         userInput.focus();
 
-        // Login/Signup Logic
-        async function signup() {
-            const phone = document.getElementById('phoneInput').value;
-            const email = document.getElementById('emailInput').value;
-            const password = document.getElementById('newPasswordInput').value;
-            
-            if (!phone || !password) {
-                alert('Phone and password are required');
-                return;
-            }
-
-            try {
-                const response = await fetch('http://localhost:3000/api/signup', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ phone, email, password })
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    alert('Signup successful! Please login.');
-                    closeModal('signupModal');
-                    showLoginModal();
-                } else {
-                    alert(data.error || 'Signup failed');
-                }
-            } catch (error) {
-                alert('Error during signup');
-            }
-        }
-
-        async function login() {
-            const loginInput = document.getElementById('loginInput').value;
-            const password = document.getElementById('passwordInput').value;
-            
-            if (!loginInput || !password) {
-                alert('Please enter all fields');
-                return;
-            }
-
-            try {
-                const response = await fetch('http://localhost:3000/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ loginInput, password })
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    localStorage.setItem('userId', data.user.id);
-                    localStorage.setItem('userPhone', data.user.phone);
-                    
-                    closeModal('loginModal');
-                    updateUIForLoggedInUser(data.user);
-                } else {
-                    alert(data.error || 'Login failed');
-                }
-            } catch (error) {
-                alert('Error during login');
-            }
-        }
-
-        function updateUIForLoggedInUser(user) {
-            const authButtons = document.querySelector('.auth-buttons');
-            authButtons.innerHTML = `
-                <span style="color: white">Welcome, ${user.phone}</span>
-                <button class="auth-btn login-btn" onclick="logout()">Logout</button>
-            `;
-        }
-
-        function logout() {
-            localStorage.removeItem('userId');
-            localStorage.removeItem('userPhone');
-            location.reload();
-        }
-
-        // Modal functions
+        // Modal Functions
         function showLoginModal() {
             document.getElementById('loginModal').style.display = 'flex';
         }
@@ -540,15 +452,28 @@
             showLoginModal();
         }
 
-        // Check if user is already logged in on page load
-        window.addEventListener('load', () => {
-            const userId = localStorage.getItem('userId');
-            const userPhone = localStorage.getItem('userPhone');
+        function login() {
+            const loginInput = document.getElementById('loginInput').value;
+            const password = document.getElementById('passwordInput').value;
             
-            if (userId && userPhone) {
-                updateUIForLoggedInUser({ phone: userPhone });
-            }
-        });
+            // Add your login logic here
+            console.log('Login attempt:', { loginInput, password });
+            
+            // For now, just close the modal
+            closeModal('loginModal');
+        }
+
+        function signup() {
+            const phone = document.getElementById('phoneInput').value;
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('newPasswordInput').value;
+            
+            // Add your signup logic here
+            console.log('Signup attempt:', { phone, email, password });
+            
+            // For now, just close the modal
+            closeModal('signupModal');
+        }
 
         // Close modals when clicking outside
         window.onclick = function(event) {
