@@ -6,8 +6,16 @@ const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// CORS configuration
+app.use(cors({
+    origin: ['https://cosbuyai.onrender.com', 'https://cosbuyai.com', 'http://localhost:3000'],
+    methods: ['GET', 'POST'],
+    credentials: true
+}));
+
 app.use(express.json());
+app.use(express.static('public'));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, {
@@ -31,6 +39,11 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', userSchema);
+
+// Serve home.html at root URL
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/home.html');
+});
 
 // Signup Route
 app.post('/api/signup', async (req, res) => {
@@ -104,34 +117,25 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Search Route with History
+// Search API endpoint
 app.post('/api/search', async (req, res) => {
     try {
-        const { query, userId } = req.body;
-
-        // Save search history if user is logged in
-        if (userId) {
-            await User.findByIdAndUpdate(userId, {
-                $push: {
-                    searchHistory: {
-                        query,
-                        timestamp: new Date()
-                    }
-                }
-            });
-        }
+        const { query } = req.body;
+        console.log('Received query:', query);
 
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: "gpt-3.5-turbo",
-            messages: [{
-                role: "system",
-                content: "You are a helpful shopping assistant that provides information in Hinglish (mix of Hindi and English)."
-            }, {
-                role: "user",
-                content: `Compare prices and features for: ${query}. Include prices from different e-commerce platforms.`
-            }],
-            max_tokens: 1000,
-            temperature: 0.7
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a helpful shopping assistant. Provide product recommendations in this format: 1. Product Name - Price\n* Key Features\n* Pros\n* Cons"
+                },
+                {
+                    role: "user",
+                    content: query
+                }
+            ],
+            max_tokens: 1000
         }, {
             headers: {
                 'Content-Type': 'application/json',
@@ -139,10 +143,11 @@ app.post('/api/search', async (req, res) => {
             }
         });
 
-        res.json({ content: response.data.choices[0].message.content });
+        console.log('API Response:', response.data.choices[0].message.content);
+        res.json({ response: response.data.choices[0].message.content });
     } catch (error) {
-        console.error('Search error:', error);
-        res.status(500).json({ error: error.message });
+        console.error('Error:', error.response?.data || error.message);
+        res.status(500).json({ error: 'An error occurred while processing your request' });
     }
 });
 
@@ -159,7 +164,7 @@ app.get('/api/history/:userId', async (req, res) => {
     }
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

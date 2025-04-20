@@ -1,10 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CosBuyAI - Smart Shopping Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        :root {
+            --background: #1a1a1a;
+            --text: #ffffff;
+            --primary: #4CAF50;
+            --secondary: #2E7D32;
+            --card-bg: #2d2d2d;
+            --input-bg: #333333;
+            --border: #404040;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,475 +21,230 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
         }
 
-        /* Header with Branding */
-        .header {
-            background: #2c3e50;
-            color: white;
-            padding: 15px 0;
+        .navbar {
+            background: var(--card-bg);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .search-box {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .search-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
             text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
         }
 
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
+        .search-description {
+            color: #cccccc;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 1.1rem;
         }
 
-        .header p {
-            font-size: 14px;
-            color: #ecf0f1;
-        }
-
-        .chat-container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            padding-bottom: 100px;
-        }
-
-        .message {
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 10px;
-            max-width: 80%;
-            position: relative;
-        }
-
-        .user-message {
-            background: #2c3250;
-            color: white;
-            margin-left: auto;
-            border-radius: 15px 15px 0 15px;
-        }
-
-        .ai-message {
-            background: white;
-            color: #2c3e50;
-            margin-right: auto;
-            border-radius: 15px 15px 15px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .message::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            width: 20px;
-            height: 20px;
-        }
-
-        .user-message::before {
-            right: -10px;
-            border-left: 10px solid #3498db;
-            border-bottom-left-radius: 15px;
-        }
-
-        .ai-message::before {
-            left: -10px;
-            border-right: 10px solid white;
-            border-bottom-right-radius: 15px;
-        }
-
-        .input-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 20px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        }
-
-        .input-box {
-            max-width: 800px;
-            margin: 0 auto;
+        .search-container {
             display: flex;
             gap: 10px;
-            align-items: center;
         }
 
-        #userInput {
+        #searchInput {
             flex: 1;
-            padding: 15px;
-            border: 2px solid #3498db;
-            border-radius: 25px;
+            padding: 15px 20px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
             font-size: 16px;
+            background: var(--input-bg);
+            color: var(--text);
             transition: all 0.3s ease;
         }
 
-        #userInput:focus {
+        #searchInput:focus {
+            border-color: var(--primary);
             outline: none;
-            border-color: #2980b9;
-            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 0 5px var(--primary);
         }
 
-        #sendButton {
+        #searchButton {
             padding: 15px 30px;
-            background: #a5a5a6;
+            background: var(--primary);
             color: white;
             border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-
-        #sendButton:hover {
-            background: #eff2f5;
-            transform: translateY(-2px);
-        }
-
-        /* Loading Animation */
-        .typing-indicator {
-            background: rgb(255, 255, 255);
-            padding: 15px;
-            border-radius: 15px;
-            margin: 10px 0;
-            display: none;
-        }
-
-        .typing-indicator span {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: #3498db;
-            border-radius: 50%;
-            margin-right: 5px;
-            animation: typing 1s infinite;
-        }
-
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes typing {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        /* नया CSS लॉगिन के लिए */
-        .brand {
-            text-align: left;
-        }
-
-        .auth-buttons {
-            display: flex;
-            gap: 15px;
-        }
-
-        .auth-btn {
-            padding: 8px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .login-btn {
-            background: transparent;
-            border: 2px solid white;
-            color: white;
-        }
-
-        .signup-btn {
-            background: white;
-            border: none;
-            color: #2c3e50;
-        }
-
-        .login-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .signup-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-header {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-
-        .modal-close {
-            position: absolute;
-            right: 20px;
-            top: 15px;
-            cursor: pointer;
-            font-size: 20px;
-            color: #666;
-        }
-
-        .input-field {
-            margin-bottom: 15px;
-        }
-
-        .input-field label {
-            display: block;
-            margin-bottom: 5px;
-            color: #2c3e50;
-        }
-
-        .input-field input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .modal-btn {
-            width: 100%;
-            padding: 12px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            border-radius: 10px;
             font-size: 16px;
-            margin-top: 10px;
-        }
-
-        .modal-btn:hover {
-            background: #2980b9;
-        }
-
-        .switch-form {
-            text-align: center;
-            margin-top: 15px;
-            color: #666;
-        }
-
-        .switch-form a {
-            color: #3498db;
             cursor: pointer;
-            text-decoration: underline;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        #searchButton:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        #result {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+            font-size: 16px;
+            line-height: 1.8;
+            color: #e0e0e0;
+        }
+
+        .product-card {
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 10px;
+            background: var(--input-bg);
+        }
+
+        .product-title {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .product-price {
+            color: #4CAF50;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .product-description {
+            color: #cccccc;
+            margin-bottom: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            color: #cccccc;
+            padding: 2rem;
+            font-size: 1.2rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .search-container {
+                flex-direction: column;
+            }
+
+            #searchButton {
+                width: 100%;
+            }
+
+            .search-title {
+                font-size: 1.5rem;
+            }
+
+            .search-description {
+                font-size: 1rem;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .search-box, #result {
+            animation: fadeIn 0.5s ease-out;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="brand">
-            <h1>CosBuyAI</h1>
-            <p>Your Smart Shopping Assistant</p>
-        </div>
-        <div class="auth-buttons">
-            <button class="auth-btn login-btn" onclick="showLoginModal()">Login</button>
-            <button class="auth-btn signup-btn" onclick="showSignupModal()">Sign Up</button>
-        </div>
-    </div>
+    <nav class="navbar">
+        <h1>CosBuyAI</h1>
+    </nav>
 
-    <div class="chat-container" id="chatContainer">
-        <!-- Welcome message -->
-        <div class="message ai-message">
-            Hello! I'm your CosBuyAI shopping assistant. How can I help you find the best products and deals today?
+    <div class="container">
+        <div class="search-box">
+            <h2 class="search-title">Smart Shopping Assistant</h2>
+            <p class="search-description">Tell us what you're looking for, and we'll find the best options for you</p>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="What are you looking for? (e.g., best smartphone under 15000)">
+                <button id="searchButton">Search</button>
+            </div>
         </div>
-    </div>
 
-    <div class="input-container">
-        <div class="input-box">
-            <input type="text" id="userInput" placeholder="Ask about any product...">
-            <button id="sendButton">Search</button>
-        </div>
-    </div>
-
-    <!-- Login Modal -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeModal('loginModal')">&times;</span>
-            <div class="modal-header">
-                <h2>Login to CosBuyAI</h2>
-            </div>
-            <div class="input-field">
-                <label>Phone Number or Email</label>
-                <input type="text" id="loginInput" placeholder="Enter your phone or email">
-            </div>
-            <div class="input-field">
-                <label>Password</label>
-                <input type="password" id="passwordInput" placeholder="Enter your password">
-            </div>
-            <button class="modal-btn" onclick="login()">Login</button>
-            <div class="switch-form">
-                Don't have an account? <a onclick="switchToSignup()">Sign Up</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Signup Modal -->
-    <div id="signupModal" class="modal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeModal('signupModal')">&times;</span>
-            <div class="modal-header">
-                <h2>Create Account</h2>
-            </div>
-            <div class="input-field">
-                <label>Phone Number</label>
-                <input type="tel" id="phoneInput" placeholder="Enter your phone number">
-            </div>
-            <div class="input-field">
-                <label>Email (Optional)</label>
-                <input type="email" id="emailInput" placeholder="Enter your email">
-            </div>
-            <div class="input-field">
-                <label>Password</label>
-                <input type="password" id="newPasswordInput" placeholder="Create a password">
-            </div>
-            <button class="modal-btn" onclick="signup()">Sign Up</button>
-            <div class="switch-form">
-                Already have an account? <a onclick="switchToLogin()">Login</a>
-            </div>
-        </div>
+        <div id="result"></div>
     </div>
 
     <script>
-        const userInput = document.getElementById('userInput');
-        const sendButton = document.getElementById('sendButton');
-        const chatContainer = document.getElementById('chatContainer');
+        document.getElementById('searchButton').addEventListener('click', async () => {
+            const query = document.getElementById('searchInput').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!query) {
+                resultDiv.innerHTML = '<div class="product-card">Please enter a search query</div>';
+                return;
+            }
 
-        function addMessage(text, isUser) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
-            messageDiv.textContent = text;
-            chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        async function handleMessage() {
-            const message = userInput.value.trim();
-            if (!message) return;
-
-            // Show user message
-            addMessage(message, true);
-
-            // Clear input
-            userInput.value = '';
-
+            resultDiv.innerHTML = '<div class="loading">Finding the best products for you...</div>';
+            
             try {
-                // Add typing indicator
-                const typingDiv = document.createElement('div');
-                typingDiv.className = 'typing-indicator';
-                typingDiv.innerHTML = '<span></span><span></span><span></span>';
-                chatContainer.appendChild(typingDiv);
-                typingDiv.style.display = 'block';
-
-                const response = await fetch('http://localhost:3000/api/search', {
+                const response = await fetch('https://cosbuyai.onrender.com/api/search', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ query: message })
+                    body: JSON.stringify({ query })
                 });
 
-                // Remove typing indicator
-                typingDiv.remove();
-
-                if (!response.ok) {
-                    throw new Error('Search failed');
-                }
-
                 const data = await response.json();
-                // Show AI response
-                addMessage(data.content, false);
+                if (data.error) {
+                    resultDiv.innerHTML = `<div class="product-card">Error: ${data.error}</div>`;
+                } else {
+                    // Format the response
+                    const formattedResponse = data.response
+                        .replace(/\n\n/g, '</p><p>')
+                        .replace(/\n/g, '<br>')
+                        .replace(/\*\*/g, '<strong>')
+                        .replace(/\*/g, '•');
+                    
+                    resultDiv.innerHTML = `<div class="product-card"><p>${formattedResponse}</p></div>`;
+                }
             } catch (error) {
-                addMessage('Error: ' + error.message, false);
-            }
-        }
-
-        // Send message on button click
-        sendButton.addEventListener('click', handleMessage);
-
-        // Send message on Enter key
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleMessage();
+                resultDiv.innerHTML = '<div class="product-card">Error connecting to server</div>';
+                console.error('Error:', error);
             }
         });
 
-        // Focus input on page load
-        userInput.focus();
-
-        // Modal Functions
-        function showLoginModal() {
-            document.getElementById('loginModal').style.display = 'flex';
-        }
-
-        function showSignupModal() {
-            document.getElementById('signupModal').style.display = 'flex';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        function switchToSignup() {
-            closeModal('loginModal');
-            showSignupModal();
-        }
-
-        function switchToLogin() {
-            closeModal('signupModal');
-            showLoginModal();
-        }
-
-        function login() {
-            const loginInput = document.getElementById('loginInput').value;
-            const password = document.getElementById('passwordInput').value;
-            
-            // Add your login logic here
-            console.log('Login attempt:', { loginInput, password });
-            
-            // For now, just close the modal
-            closeModal('loginModal');
-        }
-
-        function signup() {
-            const phone = document.getElementById('phoneInput').value;
-            const email = document.getElementById('emailInput').value;
-            const password = document.getElementById('newPasswordInput').value;
-            
-            // Add your signup logic here
-            console.log('Signup attempt:', { phone, email, password });
-            
-            // For now, just close the modal
-            closeModal('signupModal');
-        }
-
-        // Close modals when clicking outside
-        window.onclick = function(event) {
-            if (event.target.className === 'modal') {
-                event.target.style.display = 'none';
+        // Enter key to search
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('searchButton').click();
             }
-        }
+        });
     </script>
 </body>
 </html>
